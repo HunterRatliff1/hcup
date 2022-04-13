@@ -16,7 +16,8 @@ Imports:
     magrittr,
     purrr,
     rlang,
-    stringr
+    stringr,
+    tibble
 Remotes: 
     HunterRatliff1/hcup.data
 Suggests: 
