@@ -4,9 +4,9 @@
 \name{hcup-package}
 \alias{hcup}
 \alias{hcup-package}
-\title{hcup: What the Package Does (One Line, Title Case)}
+\title{hcup: Implementation of HCUP Software Tools in R}
 \description{
-What the package does (one paragraph).
+Adapts the software provided by the Healthcare Cost and Utilization Project (HCUP) for analyses of administrative database using International Classification of Diseases (ICD) codes within the R statistical environment.
 }
 \author{
 \strong{Maintainer}: Hunter Ratliff \email{hunterratliff.cv@gmail.com} (\href{https://orcid.org/0000-0003-4978-1998}{ORCID})
