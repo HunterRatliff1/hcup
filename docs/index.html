@@ -69,31 +69,51 @@
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"HunterRatliff1/hcup"</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="classify-icd-10-codes-to-ccsr-categories">Classify ICD-10 codes to CCSR categories<a class="anchor" aria-label="anchor" href="#classify-icd-10-codes-to-ccsr-categories"></a>
+<h2 id="procedures-with-icd-10">Procedures with ICD-10<a class="anchor" aria-label="anchor" href="#procedures-with-icd-10"></a>
 </h2>
-<p>The simple case is for procedures, as each procedure has one CCSR category</p>
+<p>Although I’m not a fan of procedures myself (clinical practice), I am aficionado of ICD-10 procedure codes (ICD-10-PCS). Compared to their predecessor (ICD-9), ICD-10-PCS is much more eloquent and specific, so it’s only appropriate that we start there!</p>
+<div class="section level3">
+<h3 id="procedure-classification">Procedure classification<a class="anchor" aria-label="anchor" href="#procedure-classification"></a>
+</h3>
+<p>The most straightforward of the HCUP software tools included in this package are the <a href="https://www.hcup-us.ahrq.gov/toolssoftware/procedureicd10/procedure_icd10.jsp" class="external-link">Procedure Classes</a>. Procedure classes identify procedures as [1] diagnostic or therapeutic and [2] whether they major (expected to be performed in an operating room) or minor.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hcup</span><span class="op">)</span>
-<span class="fu"><a href="reference/classify_ccsr_pr.html">classify_ccsr_pr</a></span><span class="op">(</span><span class="st">"0016070"</span><span class="op">)</span>
-<span class="co">#&gt; [1] "CNS010"</span>
-
-<span class="va">icd_10_pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"04L04DZ"</span>, <span class="st">"009Y40Z"</span>, <span class="st">"0F7C7DZ"</span>, <span class="st">"GZ2ZZZZ"</span><span class="op">)</span>
-<span class="fu"><a href="reference/classify_ccsr_pr.html">classify_ccsr_pr</a></span><span class="op">(</span><span class="va">icd_10_pr</span><span class="op">)</span>
-<span class="co">#&gt; [1] "CAR010" "CNS003" "HEP008" "MHT004"</span>
-
-<span class="co"># Vectorized using `mutate()`</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hunterratliff1.github.io/hcup" class="external-link">hcup</a></span><span class="op">)</span>
+<span class="fu"><a href="reference/classify_pr.html">classify_pr</a></span><span class="op">(</span><span class="st">"0PS443Z"</span><span class="op">)</span> <span class="co"># Spine surgery</span>
+<span class="co">#&gt; [1] "Major Therapeutic"</span>
+<span class="fu"><a href="reference/classify_pr.html">classify_pr</a></span><span class="op">(</span><span class="st">"009U3ZX"</span><span class="op">)</span> <span class="co"># Lumbar puncture</span>
+<span class="co">#&gt; [1] "Minor Diagnostic"</span></code></pre></div>
+<p>This function can be vectorized (e.g. using <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate</a></code>) as shown below:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Using the dplyr workflow</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'dplyr'</span>
-<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     filter, lag</span>
-<span class="co">#&gt; The following objects are masked from 'package:base':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
-
-<span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>icd_10 <span class="op">=</span> <span class="va">icd_10_pr</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>CCSR <span class="op">=</span> <span class="fu"><a href="reference/classify_ccsr_pr.html">classify_ccsr_pr</a></span><span class="op">(</span><span class="va">icd_10</span><span class="op">)</span>,
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>
+  Patients <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,       <span class="st">"B"</span>,       <span class="st">"C"</span><span class="op">)</span>,
+  ICD_10   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0PS443Z"</span>, <span class="st">"3E05305"</span>, <span class="st">"F13ZHZZ"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>pr_class <span class="op">=</span> <span class="fu"><a href="reference/classify_pr.html">classify_pr</a></span><span class="op">(</span><span class="va">ICD_10</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 3 × 3</span>
+<span class="co">#&gt;   Patients ICD_10  pr_class         </span>
+<span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;            </span>
+<span class="co">#&gt; 1 A        0PS443Z Major Therapeutic</span>
+<span class="co">#&gt; 2 B        3E05305 Minor Therapeutic</span>
+<span class="co">#&gt; 3 C        F13ZHZZ Minor Diagnostic</span></code></pre></div>
+<p>Although applications using ICD-9 codes aren’t covered here, this function also works the same for ICD-9 procedure codes.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/classify_pr.html">classify_pr</a></span><span class="op">(</span><span class="st">"0015"</span><span class="op">)</span> <span class="co"># Infusion of IL-2</span>
+<span class="co">#&gt; [1] "Minor Therapeutic"</span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="ccsr-for-icd-10-pcs-procedures">CCSR for ICD-10-PCS Procedures<a class="anchor" aria-label="anchor" href="#ccsr-for-icd-10-pcs-procedures"></a>
+</h3>
+<p>Much more powerful is the <a href="https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/prccsr.jsp" class="external-link">Clinical Classifications Software Refined (CCSR)</a> categories, which aggregates the expansive number of ICD-10-PCS procedure codes into a smaller number of clinically meaningful categories.</p>
+<p>Similar to the procedure classes (and all functions starting with <code>classify_</code>), this categorizes ICD codes into mutually exclusive categories.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/classify_ccsr_pr.html">classify_ccsr_pr</a></span><span class="op">(</span><span class="st">"0016070"</span><span class="op">)</span>
+<span class="co">#&gt; [1] "CNS010"</span></code></pre></div>
+<p>Again, this can be vectorized for use within data frames. The helper function <code>explain_ccsr</code> can convert these categories into human-readable labels.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>icd_10 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"04L04DZ"</span>, <span class="st">"009Y40Z"</span>, <span class="st">"0F7C7DZ"</span>, <span class="st">"GZ2ZZZZ"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>CCSR      <span class="op">=</span> <span class="fu"><a href="reference/classify_ccsr_pr.html">classify_ccsr_pr</a></span><span class="op">(</span><span class="va">icd_10</span><span class="op">)</span>,
          explained <span class="op">=</span> <span class="fu"><a href="reference/explain_ccsr.html">explain_ccsr</a></span><span class="op">(</span><span class="va">CCSR</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt; # A tibble: 4 × 3</span>
 <span class="co">#&gt;   icd_10  CCSR   explained                                                      </span>
@@ -102,7 +122,23 @@
 <span class="co">#&gt; 2 009Y40Z CNS003 Spinal canal and spinal cord drainage (excluding lumbar punctu…</span>
 <span class="co">#&gt; 3 0F7C7DZ HEP008 Common bile duct sphincterotomy and stenting                   </span>
 <span class="co">#&gt; 4 GZ2ZZZZ MHT004 Crisis intervention for mental health</span></code></pre></div>
-<p>CCSR diagnosis codes…</p>
+<p>You can also use the “detailed” option within <code>explain_ccsr(ccsr, detailed=TRUE)</code> to return additional data about the CCSR category. This returns a named list, which can be helpful in conjunction with the <a href="https://purrr.tidyverse.org/" class="external-link">purrr package</a>.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://purrr.tidyverse.org" class="external-link">purrr</a></span><span class="op">)</span>
+<span class="co"># NOTE: The results returned when `detailed = TRUE` depends on the</span>
+<span class="co">#       type of CCSR category. See the `CCSR_PR_categories` or </span>
+<span class="co">#       `CCSR_DX_categories` in the `hcup.data` package for details</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>CCSR_PR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"URN001"</span>, <span class="st">"RES010"</span>, <span class="st">"CAR004"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Explained <span class="op">=</span> <span class="fu"><a href="reference/explain_ccsr.html">explain_ccsr</a></span><span class="op">(</span><span class="va">CCSR_PR</span><span class="op">)</span>,
+         details   <span class="op">=</span> <span class="fu"><a href="reference/explain_ccsr.html">explain_ccsr</a></span><span class="op">(</span><span class="va">CCSR_PR</span>, detailed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
+         domain    <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map_chr</a></span><span class="op">(</span><span class="va">details</span>, <span class="st">"clinical_domain"</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 3 × 4</span>
+<span class="co">#&gt;   CCSR_PR Explained                                      details   domain       </span>
+<span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;                                          &lt;list&gt;    &lt;chr&gt;        </span>
+<span class="co">#&gt; 1 URN001  Cystoscopy and ureteroscopy (including biopsy) &lt;chr [7]&gt; Urinary Syst…</span>
+<span class="co">#&gt; 2 RES010  Tracheostomy                                   &lt;chr [7]&gt; Respiratory …</span>
+<span class="co">#&gt; 3 CAR004  Percutaneous coronary interventions (PCI)      &lt;chr [7]&gt; Cardiovascul…</span></code></pre></div>
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="license">

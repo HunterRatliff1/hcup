@@ -8,6 +8,13 @@
 \description{
 Adapts the software provided by the Healthcare Cost and Utilization Project (HCUP) for analyses of administrative database using International Classification of Diseases (ICD) codes within the R statistical environment.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://hunterratliff1.github.io/hcup}
+}
+
+}
 \author{
 \strong{Maintainer}: Hunter Ratliff \email{hunterratliff.cv@gmail.com} (\href{https://orcid.org/0000-0003-4978-1998}{ORCID})
 

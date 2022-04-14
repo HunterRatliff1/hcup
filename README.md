@@ -91,7 +91,7 @@ classify_ccsr_pr("0016070")
 
 Again, this can be vectorized for use within data frames. The helper
 function `explain_ccsr` can convert these categories into human-readable
-labels
+labels.
 
 ``` r
 library(dplyr)
