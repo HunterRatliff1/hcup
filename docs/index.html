@@ -69,13 +69,40 @@
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"HunterRatliff1/hcup"</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+<h2 id="classify-icd-10-codes-to-ccsr-categories">Classify ICD-10 codes to CCSR categories<a class="anchor" aria-label="anchor" href="#classify-icd-10-codes-to-ccsr-categories"></a>
 </h2>
-<p>This is a basic example which shows you how to solve a common problem:</p>
+<p>The simple case is for procedures, as each procedure has one CCSR category</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hcup</span><span class="op">)</span>
-<span class="co">## basic example code</span></code></pre></div>
-<p>…</p>
+<span class="fu"><a href="reference/classify_ccsr_pr.html">classify_ccsr_pr</a></span><span class="op">(</span><span class="st">"0016070"</span><span class="op">)</span>
+<span class="co">#&gt; [1] "CNS010"</span>
+
+<span class="va">icd_10_pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"04L04DZ"</span>, <span class="st">"009Y40Z"</span>, <span class="st">"0F7C7DZ"</span>, <span class="st">"GZ2ZZZZ"</span><span class="op">)</span>
+<span class="fu"><a href="reference/classify_ccsr_pr.html">classify_ccsr_pr</a></span><span class="op">(</span><span class="va">icd_10_pr</span><span class="op">)</span>
+<span class="co">#&gt; [1] "CAR010" "CNS003" "HEP008" "MHT004"</span>
+
+<span class="co"># Vectorized using `mutate()`</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: 'dplyr'</span>
+<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     filter, lag</span>
+<span class="co">#&gt; The following objects are masked from 'package:base':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
+
+<span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>icd_10 <span class="op">=</span> <span class="va">icd_10_pr</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>CCSR <span class="op">=</span> <span class="fu"><a href="reference/classify_ccsr_pr.html">classify_ccsr_pr</a></span><span class="op">(</span><span class="va">icd_10</span><span class="op">)</span>,
+         explained <span class="op">=</span> <span class="fu"><a href="reference/explain_ccsr.html">explain_ccsr</a></span><span class="op">(</span><span class="va">CCSR</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 4 × 3</span>
+<span class="co">#&gt;   icd_10  CCSR   explained                                                      </span>
+<span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;                                                          </span>
+<span class="co">#&gt; 1 04L04DZ CAR010 Ligation and embolization of vessels                           </span>
+<span class="co">#&gt; 2 009Y40Z CNS003 Spinal canal and spinal cord drainage (excluding lumbar punctu…</span>
+<span class="co">#&gt; 3 0F7C7DZ HEP008 Common bile duct sphincterotomy and stenting                   </span>
+<span class="co">#&gt; 4 GZ2ZZZZ MHT004 Crisis intervention for mental health</span></code></pre></div>
+<p>CCSR diagnosis codes…</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="license">
