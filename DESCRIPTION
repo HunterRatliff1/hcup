@@ -23,9 +23,12 @@ Imports:
 Remotes: 
     HunterRatliff1/hcup.data
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
 LazyData: true
 URL: https://hunterratliff1.github.io/hcup
+VignetteBuilder: knitr
