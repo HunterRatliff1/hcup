@@ -9,11 +9,149 @@ knitr::opts_chunk$set(
 )
 library(hcup)
 library(dplyr)
+library(tibble)
+library(purrr)
 library(tidyr)
 ```
+
+The [Clinical Classifications Software Refined (CCSR) software](https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/ccsr_archive.jsp#ccsr) for ICD-10-CM 
+diagnosis codes provides both one-to-one mapping (`classify_ccsr_dx1`) and one-to-many mapping 
+(`ccsr_dx`) to CCSR categories. The one-to-many mapping is necessary because many ICD-10 codes 
+span multiple meaningful categories, and the identification of all conditions related to a 
+diagnosis code would be lost by categorizing some ICD-10-CM codes into a single category.
+
+# A simple demonstration
+
+For example, consider the code **I11.0** (_Hypertensive heart disease with heart failure_) which
+encompasses both **heart failure** (CCSR category CIR019) and **hypertension with complications** 
+(CIR008). Classifying this code as heart failure alone would miss meaningful information, but on 
+the other hand, some analyses require mutually exclusive categorization.
+
+The `ccsr_dx()` function identifies all CCSR categories associated with an ICD-10 diagnosis code. 
+Each ICD-10 code can have one or more CCSR category. In the example used above, I11.0 has two CSSR
+categories, so the function returns a character vector of two CCSR categories
 
 ```{r setup}
 library(hcup)
 library(dplyr)
-library(tidyr)
+ccsr_dx("I110")
+ccsr_dx("I110") %>% explain_ccsr()
 ```
+
+If we need to do one-to-one mapping (e.g. descriptive statistics on the number of hospital discharges), we use `classify_ccsr_dx1()`. Importantly, this algorithm is only valid for the principal diagnosis (for inpatient
+records) or the first listed diagnosis code (for outpatient data)
+
+```{r}
+classify_ccsr_dx1("I110", setting = "inpatient")
+```
+
+# One-to-One with classify_ccsr_dx1
+
+The `classify_ccsr_dx1()` function is similar to the other `classify_` functions used in this
+package, so we will begin here. 
+
+Although a comprehensive review of the CCSR methodology is beyond the scope of this article 
+(I'd highly recommend reading the appendices of the [CCSR DX user guide](https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/DXCCSR-User-Guide-v2022-1.pdf)), I do 
+want to highlight a few important points here.
+
+## Only valid for the principal/first diagnosis
+
+This algorithm was developed for use with the principal diagnosis (for inpatient records) or 
+the first listed diagnosis code (for outpatient data). Consider the sample of two patients
+below, with their principal diagnosis listed in `DX1`, and subsequent diagnoses listed in 
+`DX_n`.
+
+```{r}
+library(dplyr)
+df <- tibble::tribble(
+  ~Pt_id,    ~DX_1,    ~DX_2,  ~DX_3,
+     "A",    "I10", "F17210",     NA,
+     "B",    "D62",   "Z370", "E876"
+  )
+
+## GOOD
+df %>%
+  mutate(prin_CCSR = classify_ccsr_dx1(DX_1, setting="ip"))
+
+## BAD
+df %>%
+  mutate(prin_CCSR = classify_ccsr_dx1(DX_2, setting="ip"))
+```
+
+Caution should be used when working with tidy data (long-format) to avoid classifying the
+non-principal diagnoses
+
+```{r}
+df_tidy <- df %>%
+  pivot_longer(cols      = -Pt_id, 
+               names_to  = "DX_NUM", 
+               values_to = "ICD")
+
+## GOOD
+df_tidy %>%
+  filter(DX_NUM=="DX_1") %>%
+  mutate(prin_CCSR = classify_ccsr_dx1(ICD, setting="ip"),
+         expln     = explain_ccsr(prin_CCSR))
+
+## BAD
+df_tidy %>%
+  mutate(prin_CCSR = classify_ccsr_dx1(ICD, setting="ip"),
+         expln     = explain_ccsr(prin_CCSR))
+
+rm(df, df_tidy)
+```
+
+
+## Unacceptable principal/first diagnosis
+
+Second, not all ICD-10 codes are acceptable for default classification. For example if **B95.2** 
+were listed as the Principal/First diagnoses, it would map to `XXX000` (for inpatient data) 
+and `XXX111` (for outpatient data).
+
+```{r}
+# B95.2: Enterococcus as the cause of diseases classified elsewhere
+classify_ccsr_dx1("B952", setting = "inpatient")
+classify_ccsr_dx1("B952", setting = "outpatient")
+```
+
+This could be because B95.2 was inappropriately listed as the principal diagnosis, and if
+you run into this problem frequently, it may be helpful to consult the [CCSR DX user guide](https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/DXCCSR-User-Guide-v2022-1.pdf).
+
+## Setting isn't that important
+
+As of this version of the CCSR (see `?hcup.data::CCSR_DX_mapping` to check the version),
+the setting (i.e. inpatient or outpatient) doesn't drastically change the results. Using 
+the dataset this function is based off of, we can see that the only situations where
+setting = "inpatient" and setting = "outpatient" don't agree are codes that are acceptable
+for the first diagnosis in the outpatient setting, not for the principal diagnosis in the 
+inpatient setting.
+
+```{r}
+if(interactive()){
+  hcup.data::CCSR_DX_mapping %>%
+    
+    # Recode the Unacceptable category to be the same for ip/op
+    mutate(default_CCSR_IP = recode(default_CCSR_IP, "XXX000"="Unccpt"),
+           default_CCSR_OP = recode(default_CCSR_OP, "XXX111"="Unccpt")) %>%
+    
+    # Remove default categories that match across settings
+    filter(default_CCSR_IP!=default_CCSR_OP) %>%
+    
+    count(default_CCSR_IP, default_CCSR_OP, sort=T)
+}
+```
+
+
+# One-to-Many with ccsr_dx()
+
+`ccsr_dx()` is different than most of the other functions in this package, because each
+ICD code can return multiple categories
+
+```{r}
+if(FALSE){
+  x <- hcup.data::CCSR_DX_mapping[["I10_DX"]] %>%
+    map(ccsr_dx)
+}
+
+```
+

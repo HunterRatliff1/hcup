@@ -61,15 +61,21 @@ Software Refined (CCSR) categories, in tidy format</p>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>.data</dt>
-<dd><p>Data frame with column named <code>dx_col</code></p></dd>
+<dd><p>Data frame with column named <code>dx_col</code> <strong>-OR-</strong> a single
+ICD-10-CM code (not a vector of codes)</p></dd>
 <dt>dx_col</dt>
-<dd><p>The (unquoted) name of the column in <code>.data</code> containing ICD-10-CM codes</p></dd>
+<dd><p>The (unquoted) name of the column in <code>.data</code> containing
+ICD-10-CM codes. Only use this argument if <code>.data</code> is a data frame</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of the same type as <code>.data</code> (i.e. a data.frame) with the same
-columns as <code>.data</code>. The returned data.frame will have a new column named <code>CCSR</code>containing the CCSR categories assocaited with the ICD code in the <code>dx_col</code>column. For ICD codes with multiple CCSR categories, multiple rows will be
-returned (in a <a href="https://r4ds.had.co.nz/tidy-data.html#fig:tidy-gather" class="external-link">longer, tidy format</a>)</p>
+    <p>An object of the same type as <code>.data</code>If <code>.data</code> is a data.frame, the returned data.frame will have a new
+column named <code>CCSR</code> containing the CCSR categories assocaited with the ICD
+code in the <code>dx_col</code> column. For ICD codes with multiple CCSR categories,
+multiple rows will be returned
+(in a <a href="https://r4ds.had.co.nz/tidy-data.html#fig:tidy-gather" class="external-link">longer, tidy format</a>).
+If <code>.data</code> is a single ICD-10-CM code, a character vector of the CCSR categories
+will be returned</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -138,10 +144,13 @@ category based on the principal diagnosis</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     intersect, setdiff, setequal, union</span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span> <span class="co"># for tribble fxn</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## Using a df to return a tidy df</span></span>
 <span class="r-in"><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html" class="external-link">tribble</a></span><span class="op">(</span></span>
 <span class="r-in">  <span class="op">~</span><span class="va">pt_id</span>,  <span class="op">~</span><span class="va">ICD10</span>,</span>
 <span class="r-in">     <span class="st">"A"</span>,  <span class="st">"K432"</span>,</span>
 <span class="r-in">     <span class="st">"A"</span>,  <span class="st">"A401"</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in"></span>
 <span class="r-in">  <span class="fu">ccsr_dx</span><span class="op">(</span>dx_col <span class="op">=</span> <span class="va">ICD10</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   pt_id ICD10 CCSR  </span>
@@ -150,7 +159,7 @@ category based on the principal diagnosis</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> A     A401  INF002</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> A     A401  INF003</span>
 <span class="r-in"></span>
-<span class="r-in"><span class="va">df</span> <span class="op">&lt;-</span>   <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html" class="external-link">tribble</a></span><span class="op">(</span></span>
+<span class="r-in"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html" class="external-link">tribble</a></span><span class="op">(</span></span>
 <span class="r-in">  <span class="op">~</span><span class="va">pt_id</span>,  <span class="op">~</span><span class="va">ICD10</span>,</span>
 <span class="r-in">  <span class="st">"A"</span>,     <span class="st">"K432"</span>,</span>
 <span class="r-in">  <span class="st">"A"</span>,     <span class="st">"A401"</span>,</span>
@@ -160,6 +169,7 @@ category based on the principal diagnosis</p>
 <span class="r-in">  <span class="st">"C"</span>,     <span class="st">"A564"</span></span>
 <span class="r-in"><span class="op">)</span></span>
 <span class="r-in"><span class="va">df</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in"></span>
 <span class="r-in"> <span class="fu">ccsr_dx</span><span class="op">(</span>dx_col <span class="op">=</span> <span class="va">ICD10</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
 <span class="r-in"> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>CCSR_expl <span class="op">=</span> <span class="fu"><a href="explain_ccsr.html">explain_ccsr</a></span><span class="op">(</span><span class="va">CCSR</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 9 × 4</span></span>
@@ -174,6 +184,32 @@ category based on the principal diagnosis</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> C     A5442 MUS001 Infective arthritis                                        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span> C     A564  INF010 Sexually transmitted infections (excluding HIV and hepatit…</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">9</span> C     A564  RSP006 Other specified upper respiratory infections               </span>
+<span class="r-in"></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## Using a single ICD code</span></span>
+<span class="r-in"><span class="fu">ccsr_dx</span><span class="op">(</span><span class="st">"K432"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DIG010"</span>
+<span class="r-in"><span class="fu">ccsr_dx</span><span class="op">(</span><span class="st">"A401"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "INF002" "INF003"</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## VECTORIZED VERSIONS DO NOT WORK</span></span>
+<span class="r-in"><span class="kw">if</span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="fu">ccsr_dx</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"K432"</span>, <span class="st">"A401"</span><span class="op">)</span><span class="op">)</span> <span class="co"># fails</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## You can get around this using map()</span></span>
+<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://purrr.tidyverse.org" class="external-link">purrr</a></span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="va">df</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> <span class="co"># use example df above</span></span>
+<span class="r-in">  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>CCSR <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">ICD10</span>, <span class="va">ccsr_dx</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pt_id ICD10 CCSR     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> A     K432  <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> A     A401  <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> B     I495  <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> B     E8771 <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> C     A5442 <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> C     A564  <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
+<span class="r-in"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

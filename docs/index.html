@@ -116,7 +116,7 @@
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="reference/classify_ccsr_pr.html">classify_ccsr_pr</a></span><span class="op">(</span><span class="st">"0016070"</span><span class="op">)</span>
 <span class="co">#&gt; [1] "CNS010"</span></code></pre></div>
-<p>Again, this can be vectorized for use within data frames. The helper function <code>explain_ccsr</code> can convert these categories into human-readable labels.</p>
+<p>Again, this can be vectorized for use within data frames. The helper function <code>explain_ccsr</code> can convert these categories into human-readable labels:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
 <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>icd_10 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"04L04DZ"</span>, <span class="st">"009Y40Z"</span>, <span class="st">"0F7C7DZ"</span>, <span class="st">"GZ2ZZZZ"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span>

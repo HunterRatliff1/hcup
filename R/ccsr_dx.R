@@ -158,6 +158,7 @@ ccsr_dx <- function(.data, dx_col){
                         "Perhaps you meant purrr::map(.data, ccsr_dx)?")
       rlang::abort(msg)
     }
+    warn_decimals(.data)
 
     CCSR_ref_df <- hcup.data:::CCSR_DX_tidy %>% dplyr::select(-.data$CCSR_n)
     CCSR <- lookup_table(icd_codes = .data,
@@ -180,7 +181,7 @@ ccsr_dx <- function(.data, dx_col){
     rlang::abort(message = glue::glue("`{rlang::as_label(dx_col)}` was not found as a column in data frame!"))
   }
 
-
+  # warn_decimals(dplyr::pull(.data, dx_col_raw))
   ccsr_tidy <- hcup.data:::CCSR_DX_tidy %>% dplyr::select(-.data$CCSR_n)
   j <- "I10_DX"
   names(j) <- rlang::as_label(dx_col)

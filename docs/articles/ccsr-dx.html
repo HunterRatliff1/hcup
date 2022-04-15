@@ -68,9 +68,115 @@
 
     
     
+<p>The <a href="https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/ccsr_archive.jsp#ccsr" class="external-link">Clinical Classifications Software Refined (CCSR) software</a> for ICD-10-CM diagnosis codes provides both one-to-one mapping (<code>classify_ccsr_dx1</code>) and one-to-many mapping (<code>ccsr_dx</code>) to CCSR categories. The one-to-many mapping is necessary because many ICD-10 codes span multiple meaningful categories, and the identification of all conditions related to a diagnosis code would be lost by categorizing some ICD-10-CM codes into a single category.</p>
+<div class="section level2">
+<h2 id="a-simple-demonstration">A simple demonstration<a class="anchor" aria-label="anchor" href="#a-simple-demonstration"></a>
+</h2>
+<p>For example, consider the code <strong>I11.0</strong> (<em>Hypertensive heart disease with heart failure</em>) which encompasses both <strong>heart failure</strong> (CCSR category CIR019) and <strong>hypertension with complications</strong> (CIR008). Classifying this code as heart failure alone would miss meaningful information, but on the other hand, some analyses require mutually exclusive categorization.</p>
+<p>The <code><a href="../reference/ccsr_dx.html">ccsr_dx()</a></code> function identifies all CCSR categories associated with an ICD-10 diagnosis code. Each ICD-10 code can have one or more CCSR category. In the example used above, I11.0 has two CSSR categories, so the function returns a character vector of two CCSR categories</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hunterratliff1.github.io/hcup" class="external-link">hcup</a></span><span class="op">)</span></code></pre></div>
-  </main>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hunterratliff1.github.io/hcup" class="external-link">hcup</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
+<span class="fu"><a href="../reference/ccsr_dx.html">ccsr_dx</a></span><span class="op">(</span><span class="st">"I110"</span><span class="op">)</span>
+<span class="co">#&gt; [1] "CIR008" "CIR019"</span>
+<span class="fu"><a href="../reference/ccsr_dx.html">ccsr_dx</a></span><span class="op">(</span><span class="st">"I110"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/explain_ccsr.html">explain_ccsr</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; [1] "Hypertension with complications and secondary hypertension"</span>
+<span class="co">#&gt; [2] "Heart failure"</span></code></pre></div>
+<p>If we need to do one-to-one mapping (e.g. descriptive statistics on the number of hospital discharges), we use <code><a href="../reference/classify_ccsr_dx1.html">classify_ccsr_dx1()</a></code>. Importantly, this algorithm is only valid for the principal diagnosis (for inpatient records) or the first listed diagnosis code (for outpatient data)</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/classify_ccsr_dx1.html">classify_ccsr_dx1</a></span><span class="op">(</span><span class="st">"I110"</span>, setting <span class="op">=</span> <span class="st">"inpatient"</span><span class="op">)</span>
+<span class="co">#&gt; `setting = inpatient` only applies to the principal/first listed diagnosis</span>
+<span class="co">#&gt; <span style="color: #555555;">This message is displayed once every 8 hours.</span></span>
+<span class="co">#&gt; [1] "CIR019"</span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="one-to-one-with-classify_ccsr_dx1">One-to-One with classify_ccsr_dx1<a class="anchor" aria-label="anchor" href="#one-to-one-with-classify_ccsr_dx1"></a>
+</h2>
+<p>The <code><a href="../reference/classify_ccsr_dx1.html">classify_ccsr_dx1()</a></code> function is similar to the other <code>classify_</code> functions used in this package, so we will begin here.</p>
+<p>Although a comprehensive review of the CCSR methodology is beyond the scope of this article (I’d highly recomend reading the appendices of the <a href="https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/DXCCSR-User-Guide-v2022-1.pdf" class="external-link">CCSR DX user guide</a>), I do want to highlight a few important points here.</p>
+<div class="section level3">
+<h3 id="only-valid-for-the-principalfirst-diagnosis">Only valid for the principal/first diagnosis<a class="anchor" aria-label="anchor" href="#only-valid-for-the-principalfirst-diagnosis"></a>
+</h3>
+<p>This algorithm was developed for use with the principal diagnosis (for inpatient records) or the first listed diagnosis code (for outpatient data). Consider the sample of two patients below, with their principal diagnosis listed in <code>DX1</code>, and subsequent diagnoses listed in <code>DX_n</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
+<span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html" class="external-link">tribble</a></span><span class="op">(</span>
+  <span class="op">~</span><span class="va">Pt_id</span>,    <span class="op">~</span><span class="va">DX_1</span>,    <span class="op">~</span><span class="va">DX_2</span>,  <span class="op">~</span><span class="va">DX_3</span>,
+     <span class="st">"A"</span>,    <span class="st">"I10"</span>, <span class="st">"F17210"</span>,     <span class="cn">NA</span>,
+     <span class="st">"B"</span>,    <span class="st">"D62"</span>,   <span class="st">"Z370"</span>, <span class="st">"E876"</span>
+  <span class="op">)</span>
+
+<span class="co">## GOOD</span>
+<span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>prin_CCSR <span class="op">=</span> <span class="fu"><a href="../reference/classify_ccsr_dx1.html">classify_ccsr_dx1</a></span><span class="op">(</span><span class="va">DX_1</span>, setting<span class="op">=</span><span class="st">"ip"</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 5</span></span>
+<span class="co">#&gt;   Pt_id DX_1  DX_2   DX_3  prin_CCSR</span>
+<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     I10   F17210 <span style="color: #BB0000;">NA</span>    CIR007   </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B     D62   Z370   E876  BLD004</span>
+
+<span class="co">## BAD</span>
+<span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>prin_CCSR <span class="op">=</span> <span class="fu"><a href="../reference/classify_ccsr_dx1.html">classify_ccsr_dx1</a></span><span class="op">(</span><span class="va">DX_2</span>, setting<span class="op">=</span><span class="st">"ip"</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 5</span></span>
+<span class="co">#&gt;   Pt_id DX_1  DX_2   DX_3  prin_CCSR</span>
+<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     I10   F17210 <span style="color: #BB0000;">NA</span>    XXX000   </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B     D62   Z370   E876  XXX000</span></code></pre></div>
+<p>Caution should be used when working with tidy data (long-format) to avoid classifying the non-principal diagnoses</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df_tidy</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+  <span class="fu">pivot_longer</span><span class="op">(</span>cols      <span class="op">=</span> <span class="op">-</span><span class="va">Pt_id</span>, 
+               names_to  <span class="op">=</span> <span class="st">"DX_NUM"</span>, 
+               values_to <span class="op">=</span> <span class="st">"ICD"</span><span class="op">)</span>
+
+<span class="co">## GOOD</span>
+<span class="va">df_tidy</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">DX_NUM</span><span class="op">==</span><span class="st">"DX_1"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>prin_CCSR <span class="op">=</span> <span class="fu"><a href="../reference/classify_ccsr_dx1.html">classify_ccsr_dx1</a></span><span class="op">(</span><span class="va">ICD</span>, setting<span class="op">=</span><span class="st">"ip"</span><span class="op">)</span>,
+         expln     <span class="op">=</span> <span class="fu"><a href="../reference/explain_ccsr.html">explain_ccsr</a></span><span class="op">(</span><span class="va">prin_CCSR</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 5</span></span>
+<span class="co">#&gt;   Pt_id DX_NUM ICD   prin_CCSR expln                       </span>
+<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     DX_1   I10   CIR007    Essential hypertension      </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> B     DX_1   D62   BLD004    Acute posthemorrhagic anemia</span>
+
+<span class="co">## BAD</span>
+<span class="va">df_tidy</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>prin_CCSR <span class="op">=</span> <span class="fu"><a href="../reference/classify_ccsr_dx1.html">classify_ccsr_dx1</a></span><span class="op">(</span><span class="va">ICD</span>, setting<span class="op">=</span><span class="st">"ip"</span><span class="op">)</span>,
+         expln     <span class="op">=</span> <span class="fu"><a href="../reference/explain_ccsr.html">explain_ccsr</a></span><span class="op">(</span><span class="va">prin_CCSR</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span>
+<span class="co">#&gt;   Pt_id DX_NUM ICD    prin_CCSR expln                                           </span>
+<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                           </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A     DX_1   I10    CIR007    Essential hypertension                          </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A     DX_2   F17210 XXX000    Code is unacceptable as a principal diagnosis P…</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> A     DX_3   <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>                                              </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">4</span> B     DX_1   D62    BLD004    Acute posthemorrhagic anemia                    </span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">5</span> B     DX_2   Z370   XXX000    Code is unacceptable as a principal diagnosis P…</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">6</span> B     DX_3   E876   END011    Fluid and electrolyte disorders</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">df_tidy</span><span class="op">)</span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="unacceptable-principalfirst-diagnosis">Unacceptable principal/first diagnosis<a class="anchor" aria-label="anchor" href="#unacceptable-principalfirst-diagnosis"></a>
+</h3>
+<p>Second, not all ICD-10 codes are acceptable for default classification. For example if <strong>B95.2</strong> were listed as the Principal/First diagnoses, it would map to <code>XXX000</code> (for inpatient data) and <code>XXX111</code> (for outpatient data).</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># B95.2: Enterococcus as the cause of diseases classified elsewhere</span>
+<span class="fu"><a href="../reference/classify_ccsr_dx1.html">classify_ccsr_dx1</a></span><span class="op">(</span><span class="st">"B952"</span>, setting <span class="op">=</span> <span class="st">"inpatient"</span><span class="op">)</span>
+<span class="co">#&gt; [1] "XXX000"</span>
+<span class="fu"><a href="../reference/classify_ccsr_dx1.html">classify_ccsr_dx1</a></span><span class="op">(</span><span class="st">"B952"</span>, setting <span class="op">=</span> <span class="st">"outpatient"</span><span class="op">)</span>
+<span class="co">#&gt; [1] "XXX111"</span></code></pre></div>
+<p>This could be because B95.2 was inappropriately listed as the principal diagnosis, and if you run into this problem frequently, it may be helpful to consult the <a href="https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/DXCCSR-User-Guide-v2022-1.pdf" class="external-link">CCSR DX user guide</a>.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="one-to-many-with-ccsr_dx">One-to-Many with ccsr_dx()<a class="anchor" aria-label="anchor" href="#one-to-many-with-ccsr_dx"></a>
+</h2>
+<p>…</p>
+</div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
