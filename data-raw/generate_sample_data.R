@@ -30,12 +30,14 @@ fake_surgery <- function(n_pts, icd_version){
       pr = map(n_pr, function(n){
         surg %>%
           filter(version==paste0(icd_version, "PR")) %>%
-          slice_sample(n=n, weight_by=freq) %>%
+          # slice_sample(n=n, weight_by=freq) %>%
+          slice_sample(n=n) %>%
           pull(icd_code)}),
       dx = map(n_dx, function(n){
         surg %>%
           filter(version==paste0(icd_version, "DX")) %>%
-          slice_sample(n=n, weight_by=freq) %>%
+          # slice_sample(n=n, weight_by=freq) %>%
+          slice_sample(n=n) %>%
           pull(icd_code)}),
       version = icd_version)
 }

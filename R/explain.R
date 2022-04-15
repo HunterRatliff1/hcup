@@ -1,4 +1,4 @@
-#' Look up CCSR codes descriptions
+#' Look up CCSR category descriptions
 #'
 #' @param ccsr Vector of CCSR codes to be explained. Can be a mix of diagnosis
 #'   and/or procedure CCSR groups.
@@ -62,7 +62,7 @@ explain_ccsr <- function(ccsr, detailed=FALSE){
 
 }
 
-#' Look up CCS codes descriptions
+#' Look up CCS category descriptions
 #'
 #' @param ccs Vector of CCS codes to be explained. Can be a mix of diagnosis
 #'   and/or procedure CCS groups.

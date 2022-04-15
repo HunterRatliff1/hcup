@@ -2,7 +2,7 @@
 % Please edit documentation in R/explain.R
 \name{explain_ccs}
 \alias{explain_ccs}
-\title{Look up CCS codes descriptions}
+\title{Look up CCS category descriptions}
 \usage{
 explain_ccs(ccs, detailed = FALSE)
 }
@@ -16,7 +16,7 @@ the CCS category is returned. If set to \code{TRUE}, it will return a list of
 named character vectors}
 }
 \description{
-Look up CCS codes descriptions
+Look up CCS category descriptions
 }
 \examples{
 # Explain the CCS for diagnosis categories

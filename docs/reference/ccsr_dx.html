@@ -25,6 +25,13 @@ Software Refined (CCSR) categories, in tidy format"><!-- mathjax --><script src=
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/ccsr-dx.html">CCSR for ICD-10-CM Diagnosis Codes</a>
+    <a class="dropdown-item" href="../articles/procedures.html">Procedures with ICD-10-PCS</a>
+  </div>
+</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -73,7 +80,10 @@ diagnosis codes to CCSR categories. The one-to-many mapping is
 necessary because many ICD-10 codes span multiple meaningful
 categories, and the identification of all conditions related to
 a diagnosis code would be lost by categorizing some ICD-10-CM
-codes into a single category.</p>
+codes into a single category.</p><div class="section">
+<h3 id="one-to-many">One-to-many<a class="anchor" aria-label="anchor" href="#one-to-many"></a></h3>
+
+
 <p>For example, consider the code <strong>I11.0</strong> (<em>Hypertensive heart
 disease with heart failure</em>) which encompasses both <strong>heart
 failure</strong> (CCSR category CIR019) and <strong>hypertension with
@@ -92,23 +102,28 @@ See <a href="https://r4ds.had.co.nz/tidy-data.html" class="external-link">the ti
 of R for Data Science or the <a href="https://doi.org/10.18637/jss.v059.i10" class="external-link">corresponding paper</a>
 for more on this conceptual approach.</p>
 <table class="table table"><tr><td><strong>pt_id</strong></td><td><strong><code>ICD10dx</code></strong></td><td><strong>CCSR</strong></td></tr><tr><td>A</td><td><code>K432</code></td><td>DIG010</td></tr><tr><td>A</td><td><code>A401</code></td><td>INF002</td></tr><tr><td>A</td><td><code>A401</code></td><td>INF003</td></tr><tr><td>B</td><td>...</td><td>...</td></tr></table></div>
-    <div class="section level2">
-    <h2 id="ccsr-vs-ccs">CCSR vs CCS<a class="anchor" aria-label="anchor" href="#ccsr-vs-ccs"></a></h2>
-    
+
+<div class="section">
+<h3 id="ccsr-vs-ccs">CCSR vs CCS<a class="anchor" aria-label="anchor" href="#ccsr-vs-ccs"></a></h3>
 
 
 <p>There are numerous differences between CCSR and CCS (the predecessor to CCSR).
 The CCS classifies codes into multi-level categories in a hierarchical manner,
 which allows users of CCS to use varying levels of specificity in their
-classification (see ............)</p>
-<p>!! Need to finish this later !!</p>
+classification (see <code><a href="classify_ccs.html">classify_ccs</a></code>), while the CCSR does <em>not</em> have
+multiple classification levles. Additionally, CCSR does not classify codes into
+mutually exclusive categories (for ICD-10 diagnosis codes) and the categories
+used in CCSR aren't the same as the old categories used in CCS.</p>
 <p>See Appendix A of the <a href="https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/DXCCSR-User-Guide-v2022-1.pdf" class="external-link">CCSR user guide</a>
 for more details on the differences between CCSR and CCS.</p>
+</div>
+
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="classify_ccsr_dx1.html">classify_ccsr_dx1</a></code> for identifying a single CCSR
-category based on the principal diagnosis</p></div>
+category based on the principal diagnosis</p>
+<p><code><a href="classify_ccs.html">classify_ccs</a></code> for the legacy CCS categories</p></div>
     </div>
 
     <div class="section level2">

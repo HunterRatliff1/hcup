@@ -7,16 +7,22 @@
 ccsr_dx(.data, dx_col)
 }
 \arguments{
-\item{.data}{Data frame with column named \code{dx_col}}
+\item{.data}{Data frame with column named \code{dx_col} \strong{-OR-} a single
+ICD-10-CM code (not a vector of codes)}
 
-\item{dx_col}{The (unquoted) name of the column in \code{.data} containing ICD-10-CM codes}
+\item{dx_col}{The (unquoted) name of the column in \code{.data} containing
+ICD-10-CM codes. Only use this argument if \code{.data} is a data frame}
 }
 \value{
-An object of the same type as \code{.data} (i.e. a data.frame) with the same
-columns as \code{.data}. The returned data.frame will have a new column named \code{CCSR}
-containing the CCSR categories assocaited with the ICD code in the \code{dx_col}
-column. For ICD codes with multiple CCSR categories, multiple rows will be
-returned (in a \href{https://r4ds.had.co.nz/tidy-data.html#fig:tidy-gather}{longer, tidy format})
+An object of the same type as \code{.data}
+If \code{.data} is a data.frame, the returned data.frame will have a new
+column named \code{CCSR} containing the CCSR categories assocaited with the ICD
+code in the \code{dx_col} column. For ICD codes with multiple CCSR categories,
+multiple rows will be returned
+(in a \href{https://r4ds.had.co.nz/tidy-data.html#fig:tidy-gather}{longer, tidy format}).
+
+If \code{.data} is a single ICD-10-CM code, a character vector of the CCSR categories
+will be returned
 }
 \description{
 Given a data.frame with ICD-10-CM diagnosis codes, this function
@@ -32,6 +38,7 @@ necessary because many ICD-10 codes span multiple meaningful
 categories, and the identification of all conditions related to
 a diagnosis code would be lost by categorizing some ICD-10-CM
 codes into a single category.
+\subsection{One-to-many}{
 
 For example, consider the code \strong{I11.0} (\emph{Hypertensive heart
 disease with heart failure}) which encompasses both \strong{heart
@@ -76,30 +83,34 @@ A         \tab   \code{A401}      \tab   INF003 \cr
 B         \tab     ...       \tab    ...
 }
 }
-\section{CCSR vs CCS}{
 
+\subsection{CCSR vs CCS}{
 
 There are numerous differences between CCSR and CCS (the predecessor to CCSR).
 The CCS classifies codes into multi-level categories in a hierarchical manner,
 which allows users of CCS to use varying levels of specificity in their
-classification (see ............)
-
-!! Need to finish this later !!
+classification (see \code{\link{classify_ccs}}), while the CCSR does \emph{not} have
+multiple classification levles. Additionally, CCSR does not classify codes into
+mutually exclusive categories (for ICD-10 diagnosis codes) and the categories
+used in CCSR aren't the same as the old categories used in CCS.
 
 See Appendix A of the \href{https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/DXCCSR-User-Guide-v2022-1.pdf}{CCSR user guide}
 for more details on the differences between CCSR and CCS.
 }
-
+}
 \examples{
 library(dplyr)
 library(tibble) # for tribble fxn
+
+## Using a df to return a tidy df
 tibble::tribble(
   ~pt_id,  ~ICD10,
      "A",  "K432",
      "A",  "A401") \%>\%
+
   ccsr_dx(dx_col = ICD10)
 
-df <-   tibble::tribble(
+df <- tibble::tribble(
   ~pt_id,  ~ICD10,
   "A",     "K432",
   "A",     "A401",
@@ -109,10 +120,28 @@ df <-   tibble::tribble(
   "C",     "A564"
 )
 df \%>\%
+
  ccsr_dx(dx_col = ICD10) \%>\%
  mutate(CCSR_expl = explain_ccsr(CCSR))
+
+
+## Using a single ICD code
+ccsr_dx("K432")
+ccsr_dx("A401")
+
+## VECTORIZED VERSIONS DO NOT WORK
+if(FALSE) ccsr_dx(c("K432", "A401")) # fails
+
+## You can get around this using map()
+library(purrr)
+
+df \%>\% # use example df above
+  mutate(CCSR = map(ICD10, ccsr_dx))
+
 }
 \seealso{
 \code{\link{classify_ccsr_dx1}} for identifying a single CCSR
 category based on the principal diagnosis
+
+\code{\link{classify_ccs}} for the legacy CCS categories
 }

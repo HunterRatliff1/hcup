@@ -1,0 +1,19 @@
+---
+title: "CCSR for ICD-10-CM Diagnosis Codes"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(hcup)
+library(dplyr)
+library(tidyr)
+```
+
+```{r setup}
+library(hcup)
+library(dplyr)
+library(tidyr)
+```

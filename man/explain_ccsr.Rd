@@ -2,7 +2,7 @@
 % Please edit documentation in R/explain.R
 \name{explain_ccsr}
 \alias{explain_ccsr}
-\title{Look up CCSR codes descriptions}
+\title{Look up CCSR category descriptions}
 \usage{
 explain_ccsr(ccsr, detailed = FALSE)
 }
@@ -16,7 +16,7 @@ the CCSR category is returned. If set to \code{TRUE}, it will return a list of
 named character vectors}
 }
 \description{
-Look up CCSR codes descriptions
+Look up CCSR category descriptions
 }
 \examples{
 # Explain the CCSR for diagnosis categories
