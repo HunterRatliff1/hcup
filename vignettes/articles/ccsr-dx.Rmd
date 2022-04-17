@@ -15,8 +15,8 @@ library(tidyr)
 ```
 
 The [Clinical Classifications Software Refined (CCSR) software](https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/ccsr_archive.jsp#ccsr) for ICD-10-CM 
-diagnosis codes provides both one-to-one mapping (`classify_ccsr_dx1`) and one-to-many mapping 
-(`ccsr_dx`) to CCSR categories. The one-to-many mapping is necessary because many ICD-10 codes 
+diagnosis codes provides both one-to-one mapping (`classify_ccsr_dx1()`) and one-to-many mapping 
+(`ccsr_dx()`) to CCSR categories. The one-to-many mapping is necessary because many ICD-10 codes 
 span multiple meaningful categories, and the identification of all conditions related to a 
 diagnosis code would be lost by categorizing some ICD-10-CM codes into a single category.
 
@@ -145,13 +145,72 @@ if(interactive()){
 # One-to-Many with ccsr_dx()
 
 `ccsr_dx()` is different than most of the other functions in this package, because each
-ICD code can return multiple categories
+ICD code can return multiple categories per ICD code. This means that we'll be dealing 
+with lists. To demonstrate, consider the two ICD-10 codes below:
+
+|pt_id    | DX_NUM|`I10_DX` |
+|:--------|:------|:--------|
+|John Doe |      1|`A401`   |
+|John Doe |      2|`K432`   |
+
+The code `A401` maps to two CCSR categories (_INF002_ & _INF003_) while `K432` only has 
+one associated CCSR category (_DIG010_)
 
 ```{r}
-if(FALSE){
-  x <- hcup.data::CCSR_DX_mapping[["I10_DX"]] %>%
-    map(ccsr_dx)
-}
+ccsr_dx("A401")
+ccsr_dx("K432")
+```
 
+Appending this to the previous table gives us
+
+|pt_id    | DX_NUM|`I10_DX` |CCSR           |
+|:--------|------:|:--------|:--------------|
+|John Doe |      1|`A401`   |INF002, INF003 |
+|John Doe |      2|`K432`   |DIG010         |
+
+```{r}
+df.listcol <- dplyr::tibble(pt_id = "John Doe",
+                            DX_NUM = 1:2,
+                            I10_DX = c("A401", "K432")) %>%
+  mutate(CCSR = ccsr_dx(I10_DX))
+
+df.listcol
+
+str(df.listcol$CCSR)
+```
+
+The column **CCSR** in the table above is now a list. For those unfamiliar with list
+columns the book [Functional Programming](https://dcl-prog.stanford.edu/list-columns.html)
+has a helpful overview chapter and the [Rectangle vignette](https://tidyr.tidyverse.org/articles/rectangle.html) in tidyr. You can also use `View(df.listcol)` in RStudio to see the
+contents of the list column in a more familiar structure.
+
+If you want to get this list-column into an atomic vector, `tidyr::unnest_longer()` will
+make a new row for every element within the list
+
+```{r}
+df.listcol %>%
+  unnest_longer(CCSR)
+```
+
+# A longer example
+
+```{r}
+df <- tibble::tribble(
+  ~pt_id, ~DX_NUM, ~ICD10,
+  "A",     1,      "K432",
+  "A",     2,      "A401",
+  "B",     1,      "I495",
+  "B",     2,   "BadCode",
+  "C",     1,     "E8771",
+  "C",     2,     "A5442",
+  "C",     3,      "A564"
+)
+```
+
+```{r}
+df %>%
+ mutate(CCSR = ccsr_dx(ICD10)) %>%
+ tidyr::unnest_longer(CCSR) %>%
+ mutate(CCSR_expl = explain_ccsr(CCSR))
 ```
 

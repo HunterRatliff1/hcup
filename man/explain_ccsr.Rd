@@ -32,10 +32,16 @@ dplyr::tibble(
   Type = c("DX", "DX", "DX", "PR", "PR", "PR")) \%>\%
 mutate(explained = explain_ccsr(CCSR))
 
-# Example using the detailed option
-library(purrr)
-tibble(CCSR_PR = c("URN001", "RES010", "CAR004")) \%>\%
+## Examples using the detailed option
+detailed <- tibble(CCSR_PR = c("URN001", "RES010", "CAR004")) \%>\%
   mutate(Explained = explain_ccsr(CCSR_PR),
-         details   = explain_ccsr(CCSR_PR, detailed = TRUE),
-         domain    = map_chr(details, "clinical_domain"))
+         details   = explain_ccsr(CCSR_PR, detailed = TRUE))
+
+library(purrr) # use purrr to extract one option
+detailed \%>\%
+  mutate(domain = map_chr(details, "clinical_domain"))
+
+library(tidyr) ## use unnest_wider to see all details
+detailed \%>\%
+  unnest_wider(details)
 }

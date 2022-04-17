@@ -15,11 +15,13 @@ Imports:
     dplyr,
     glue,
     hcup.data (>= 0.0.0.9000),
+    lifecycle,
     magrittr,
     purrr,
     rlang,
     stringr,
-    tibble
+    tibble,
+    tidyr (>= 1.0.0)
 Remotes: 
     HunterRatliff1/hcup.data
 Suggests: 
