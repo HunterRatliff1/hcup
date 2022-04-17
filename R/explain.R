@@ -23,15 +23,26 @@
 #'   Type = c("DX", "DX", "DX", "PR", "PR", "PR")) %>%
 #' mutate(explained = explain_ccsr(CCSR))
 #'
-#' # Example using the detailed option
-#' library(purrr)
-#' tibble(CCSR_PR = c("URN001", "RES010", "CAR004")) %>%
+#' ## Examples using the detailed option
+#' detailed <- tibble(CCSR_PR = c("URN001", "RES010", "CAR004")) %>%
 #'   mutate(Explained = explain_ccsr(CCSR_PR),
-#'          details   = explain_ccsr(CCSR_PR, detailed = TRUE),
-#'          domain    = map_chr(details, "clinical_domain"))
+#'          details   = explain_ccsr(CCSR_PR, detailed = TRUE))
+#'
+#' library(purrr) # use purrr to extract one option
+#' detailed %>%
+#'   mutate(domain = map_chr(details, "clinical_domain"))
+#'
+#' library(tidyr) ## use unnest_wider to see all details
+#' detailed %>%
+#'   unnest_wider(details)
 explain_ccsr <- function(ccsr, detailed=FALSE){
   CCSR_DX <- hcup.data::CCSR_DX_categories
   CCSR_PR <- hcup.data::CCSR_PR_categories
+
+  # If given single NA value, return NA
+  if(length(ccsr)==1){
+    if(is.na(ccsr)) return(NA)
+  }
 
   # Regular lookup unless told to return details
   if(!detailed){
@@ -43,6 +54,12 @@ explain_ccsr <- function(ccsr, detailed=FALSE){
     CCSR <- lookup_table(icd_codes = ccsr,
                          ref_df    = CCSR_ref,
                          data_col  = "CCSR")
+
+    # Return NULL if nothing is found
+    if(nrow(CCSR)==0) {
+      rlang::warn(glue::glue("No CCSR category found for {ccsr}"))
+      return(NULL)
+    }
     return(CCSR[["CCSR_desc"]])
   }
 
@@ -52,11 +69,22 @@ explain_ccsr <- function(ccsr, detailed=FALSE){
     ccsr %>%
       purrr::map(function(category){
 
+        if(is.null(category)|is.na(category)) {
+          return(category)
+        }
+
 
         if(category %in% CCSR_DX$CCSR) df <- CCSR_DX[CCSR_DX$CCSR==category,]
         if(category %in% CCSR_PR$CCSR) df <- CCSR_PR[CCSR_PR$CCSR==category,]
 
+        # Return NULL if nothing is found
+        if(nrow(df)==0) {
+          rlang::warn(glue::glue("No CCSR category found for {category}"))
+          return(NULL)
+        }
+
         t(df)[,1]
+
       })
   }
 
