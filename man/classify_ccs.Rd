@@ -18,10 +18,12 @@ classify_ccs(icd_codes, code_type, level = NULL)
 to the type and version of ICD codes used}
 
 \item{level}{The level of CCS to use. The default is to use the
-single-level CCS category}
+single-level CCS category (\code{"single"}). See Details section for use
+with mutli-level CCS}
 }
 \value{
-
+A vector of the same length as \code{icd_codes}. If \code{level="all"},
+then a tibble will be returned, with each ICD code per row
 }
 \description{
 Converts a vector of ICD diagnosis codes into a vector of Clinical
@@ -44,6 +46,14 @@ groupings or to assess very specific conditions and procedures. The
 multi-level CCS groups single-level CCS categories into broader
 body systems or condition categories (e.g., "Diseases of the Circulatory
 System," "Mental Disorders," and "Injury").
+
+The levels allowed in the multi-level CCS depends on the version/type
+of ICD codes used:
+\itemize{
+\item \strong{dx9} (ICD-9-CM diagnosis): Allows levels 1 - 4
+\item \strong{pr9} (ICD-9-CM procedure): Allows levels 1 - 3
+\item \strong{dx10} and \strong{pr10} (ICD-10): Allows levels 1 - 2
+}
 
 An example using CCS for diagnosis codes is shown below:
 
@@ -105,6 +115,38 @@ Although this is a trivial change for most applications, it is mentioned
 here because (for the purposes of reproducibility) this notation should
 be changed back to the original format for any publications or uses beyond this
 package.
+}
+}
+\examples{
+library(dplyr)
+## Look up ICD-9 DX codes
+classify_ccs("8442", code_type = "dx9", level = "single")
+
+# Vectorized
+tibble(ICD = c("8442", "1403", "9682",  "36463", "3595")) \%>\%
+  mutate(CCS      = classify_ccs(ICD, code_type = "dx9"),
+         CCS_expl = explain_ccs(CCS))
+
+## Works the same for ICD-9 PR codes
+classify_ccs("066", code_type = "pr9")
+
+## Also works for ICD-10, but CCSR is prefered
+classify_ccs("M61019",  "dx10", level="single")
+classify_ccs("0TY10Z1", "pr10", "single")
+
+## Specify level to use multi-level CCS
+c("0223","1100") \%>\%
+  classify_ccs(code_type = "dx9", level="1")
+
+# If you want to see all levels use `level="all"`
+# which returns a tibble
+df <- c("0223","1100") \%>\%
+  classify_ccs(code_type = "dx9", level="all")
+df
+
+if(rlang::is_installed("dplyr", version = "1.0.0")){
+  df \%>\% # requires dplyr::across()
+    mutate(across(c(CCS, CCS_lvl1), explain_ccs))
 }
 }
 \seealso{

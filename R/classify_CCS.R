@@ -7,9 +7,11 @@
 #' @param code_type One of `"dx9", "dx10", "pr9", or "pr10"`, corresponding
 #'   to the type and version of ICD codes used
 #' @param level The level of CCS to use. The default is to use the
-#'   single-level CCS category
+#'   single-level CCS category (`"single"`). See Details section for use
+#'   with mutli-level CCS
 #'
-#' @return
+#' @return A vector of the same length as `icd_codes`. If `level="all"`,
+#'   then a tibble will be returned, with each ICD code per row
 #' @export
 #' @details
 #'
@@ -29,6 +31,13 @@
 #' multi-level CCS groups single-level CCS categories into broader
 #' body systems or condition categories (e.g., "Diseases of the Circulatory
 #' System," "Mental Disorders," and "Injury").
+#'
+#' The levels allowed in the multi-level CCS depends on the version/type
+#' of ICD codes used:
+#'
+#' * __dx9__ (ICD-9-CM diagnosis): Allows levels 1 - 4
+#' * __pr9__ (ICD-9-CM procedure): Allows levels 1 - 3
+#' * __dx10__ and __pr10__ (ICD-10): Allows levels 1 - 2
 #'
 #' An example using CCS for diagnosis codes is shown below:
 #'
@@ -102,16 +111,52 @@
 #' HCUP page for \href{https://www.hcup-us.ahrq.gov/toolssoftware/ccsr/ccsr_archive.jsp}{CCS beta with ICD-10}
 #'
 #' @examples
+#' library(dplyr)
+#' ## Look up ICD-9 DX codes
+#' classify_ccs("8442", code_type = "dx9", level = "single")
+#'
+#' # Vectorized
+#' tibble(ICD = c("8442", "1403", "9682",  "36463", "3595")) %>%
+#'   mutate(CCS      = classify_ccs(ICD, code_type = "dx9"),
+#'          CCS_expl = explain_ccs(CCS))
+#'
+#' ## Works the same for ICD-9 PR codes
+#' classify_ccs("066", code_type = "pr9")
+#'
+#' ## Also works for ICD-10, but CCSR is prefered
+#' classify_ccs("M61019",  "dx10", level="single")
+#' classify_ccs("0TY10Z1", "pr10", "single")
+#'
+#' ## Specify level to use multi-level CCS
+#' c("0223","1100") %>%
+#'   classify_ccs(code_type = "dx9", level="1")
+#'
+#' # If you want to see all levels use `level="all"`
+#' # which returns a tibble
+#' df <- c("0223","1100") %>%
+#'   classify_ccs(code_type = "dx9", level="all")
+#' df
+#'
+#' if(rlang::is_installed("dplyr", version = "1.0.0")){
+#'   df %>% # requires dplyr::across()
+#'     mutate(across(c(CCS, CCS_lvl1), explain_ccs))
+#' }
 classify_ccs <- function(icd_codes, code_type, level=NULL) {
-
-  # If level is not provided, then default to single
-  level <- level %||% heuristic_msg("level", "single")
-  level <- as.character(level)
 
   # Check to see that a valid `code_type` was given, then base on that
   # code type, check that a valid level was given. Finally, match codes
   # to their reference data.frame
   code_type <- rlang::arg_match(code_type, c("dx9", "dx10", "pr9", "pr10"))
+
+
+  # If level is not provided, then default to single
+  if(is.null(level)){
+    rlang::inform(message = glue::glue("No value provided for `level`. Using `level = single` as the default"),
+                  .frequency="regularly", .frequency_id=paste0("classify_ccs",code_type))
+  }
+  level <- level %||% "single"
+  level <- as.character(level)
+
 
   if(code_type=="dx9"){
     CCS_ref_df <- hcup.data::CCS_dx9_map   # 4 levels
@@ -172,25 +217,48 @@ classify_ccs <- function(icd_codes, code_type, level=NULL) {
 
 if(F){
   load_all()
-  classify_CCS("01001", code_type = "dx9", level = "2")
-  classify_CCS("3719", code_type = "dx9", level = "2")
-  c("01001", "3719") %>%
-    classify_CCS(code_type = "dx9", level = "1")
 
 
-  classify_CCS("C8194", code_type = "dx10", level = "2")
-  c("C8194", "R198") %>%
-    classify_CCS(code_type = "dx10", level = "all")
 
-  classify_CCS("3894", code_type = "pr9")
-  c("3894", "6869") %>%
-    classify_CCS(code_type = "pr9", level = "all") %>%
-    dplyr::mutate(exp = explain_ccs(CCS))
+  # ## Look up ICD-9 DX codes
+  # classify_ccs("8442", code_type = "dx9", level = "single")
+  #
+  # # Vectorized
+  # dplyr::tibble(ICD = c("8442", "1403", "9682",  "36463", "3595")) %>%
+  #   mutate(CCS      = classify_ccs(ICD, code_type = "dx9"),
+  #          CCS_expl = explain_ccs(CCS))
 
-  classify_CCS("02160ZQ", code_type = "pr10", level = "2")
-  c("01UR0JZ", "02160ZQ") %>%
-    classify_CCS(code_type = "pr10", level = "all") %>%
-    dplyr::mutate(exp = explain_ccs(CCS))
+  dplyr::tibble(ICD = c("0223","1100")) %>%
+    mutate(CCS      = classify_ccs(ICD, "dx9", level = "single"),
+           CCS_lvl2 = classify_ccs(ICD, "dx9", level = "1"),
+           CCS_expl = explain_ccs(CCS),
+           CCS_expl2 = explain_ccs(CCS_lvl2))
+
+  c("0223","1100") %>%
+    classify_ccs(code_type = "dx9", "all")
+
+  # c("8442", "01001", "9682",  "36463", "3595") %>%
+  #   classify_ccs(code_type = "dx9", 2) %>%
+  #   explain_ccs()
+
+  ## Look up ICD-9 PR codes
+  c("066", "2642", "1911", "8395", "1152") %>%
+    classify_ccs(code_type = "pr9") %>%
+    explain_ccs()
+
+
+  c("M61019", "S68610A", "M80041P", "S12330A", "S76299D") %>%
+    classify_ccs(code_type = "dx10") %>%
+    explain_ccs()
+
+
+
+
+  c("0TY10Z1", "0RJM4ZZ", "0UT07ZZ", "0210088", "02HK32Z") %>%
+    classify_ccs(code_type = "pr10") %>%
+    explain_ccs()
+
+
 
 
 }

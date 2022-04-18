@@ -107,22 +107,6 @@ tibble::tribble(
   mutate(CCSR = ccsr_dx(ICD10)) \%>\%
   unnest_longer(CCSR)
 
-## A longer example
-df <- tibble::tribble(
-  ~pt_id,  ~ICD10,
-  "A",     "K432",
-  "B",     "A401",
-  "C",     "I495",
-  "D",    "E8771",
-  "E",    "A5442",
-  "F",     "A564"
-)
-
-df \%>\%
- mutate(CCSR = ccsr_dx(ICD10)) \%>\%
- tidyr::unnest_longer(CCSR) \%>\%
- mutate(CCSR_expl = explain_ccsr(CCSR))
-
 }
 \seealso{
 \code{\link{classify_ccsr_dx1}} for identifying a single CCSR
