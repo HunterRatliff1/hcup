@@ -10,6 +10,6 @@ reference:
 - contents:
   - starts_with("classify_")
 - title: Explain
-  desc:  Converts HCUP categories into human-readable labels
+  desc:  Converts HCUP categories into human-readable labels.
 - contents:
   - starts_with("explain_")
