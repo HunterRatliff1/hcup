@@ -99,6 +99,9 @@
 #' See \code{\link{explain_ccs}} to convert the CCS category into a
 #' description of the category
 #'
+#' Use \code{\link{ccsr_dx}} to use CCSR categories, which are prefered
+#' for ICD-10 data
+#'
 #' \code{\link[hcup.data:CCS_dx9_map]{CCS_dx9_map}},
 #' \code{\link[hcup.data:CCS_pr9_map]{CCS_pr9_map}},
 #' \code{\link[hcup.data:CCS_dx10_map]{CCS_dx10_map}}, and

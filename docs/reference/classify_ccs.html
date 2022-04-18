@@ -69,11 +69,13 @@ Classifications Software (CCS) categories using the HCUP's software</p>
 to the type and version of ICD codes used</p></dd>
 <dt>level</dt>
 <dd><p>The level of CCS to use. The default is to use the
-single-level CCS category</p></dd>
+single-level CCS category (<code>"single"</code>). See Details section for use
+with mutli-level CCS</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    
+    <p>A vector of the same length as <code>icd_codes</code>. If <code>level="all"</code>,
+then a tibble will be returned, with each ICD code per row</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -94,7 +96,11 @@ groupings or to assess very specific conditions and procedures. The
 multi-level CCS groups single-level CCS categories into broader
 body systems or condition categories (e.g., "Diseases of the Circulatory
 System," "Mental Disorders," and "Injury").</p>
-<p>An example using CCS for diagnosis codes is shown below:</p>
+<p>The levels allowed in the multi-level CCS depends on the version/type
+of ICD codes used:</p><ul><li><p><strong>dx9</strong> (ICD-9-CM diagnosis): Allows levels 1 - 4</p></li>
+<li><p><strong>pr9</strong> (ICD-9-CM procedure): Allows levels 1 - 3</p></li>
+<li><p><strong>dx10</strong> and <strong>pr10</strong> (ICD-10): Allows levels 1 - 2</p></li>
+</ul><p>An example using CCS for diagnosis codes is shown below:</p>
 <table class="table table"><tr><td><strong>CCS_lvl1</strong></td><td><strong>CCS_level2</strong></td><td><strong>CCS (single-level)</strong></td></tr><tr><td>DX-1</td><td>DX-1.1</td><td><code>DX1, DX2, DX3, DX9</code></td></tr><tr><td>DX-1</td><td>DX-1.2</td><td><code>DX4</code></td></tr><tr><td>DX-1</td><td>DX-1.3</td><td><code>DX5, DX6, DX7</code></td></tr><tr><td>DX-1</td><td>DX-1.4</td><td><code>DX8</code></td></tr><tr><td>DX-1</td><td>DX-1.5</td><td><code>DX10</code></td></tr></table><p>It also splits single-level CCS categories to provide more detail.
 For example, the single-level CCS diagnosis category <code>4</code> (<em>Mycoses</em>)
 can be further split into 1.2.1 (<em>Candidiasis of the mouth</em>) and
@@ -147,6 +153,8 @@ package.</p>
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>See <code><a href="explain_ccs.html">explain_ccs</a></code> to convert the CCS category into a
 description of the category</p>
+<p>Use <code><a href="ccsr_dx.html">ccsr_dx</a></code> to use CCSR categories, which are prefered
+for ICD-10 data</p>
 <p><code><a href="https://rdrr.io/pkg/hcup.data/man/CCS_dx9_map.html" class="external-link">CCS_dx9_map</a></code>,
 <code><a href="https://rdrr.io/pkg/hcup.data/man/CCS_pr9_map.html" class="external-link">CCS_pr9_map</a></code>,
 <code><a href="https://rdrr.io/pkg/hcup.data/man/CCS_dx10_map.html" class="external-link">CCS_dx10_map</a></code>, and
@@ -154,6 +162,66 @@ description of the category</p>
 <code>hcup.data</code> package for the datasets</p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span class="r-in"><span class="co">## Look up ICD-9 DX codes</span></span>
+<span class="r-in"><span class="fu">classify_ccs</span><span class="op">(</span><span class="st">"8442"</span>, code_type <span class="op">=</span> <span class="st">"dx9"</span>, level <span class="op">=</span> <span class="st">"single"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DX232"</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Vectorized</span></span>
+<span class="r-in"><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>ICD <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"8442"</span>, <span class="st">"1403"</span>, <span class="st">"9682"</span>,  <span class="st">"36463"</span>, <span class="st">"3595"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>CCS      <span class="op">=</span> <span class="fu">classify_ccs</span><span class="op">(</span><span class="va">ICD</span>, code_type <span class="op">=</span> <span class="st">"dx9"</span><span class="op">)</span>,</span>
+<span class="r-in">         CCS_expl <span class="op">=</span> <span class="fu"><a href="explain_ccs.html">explain_ccs</a></span><span class="op">(</span><span class="va">CCS</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No value provided for `level`. Using `level = single` as the default</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #555555;">This message is displayed once every 8 hours.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ICD   CCS   CCS_expl                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 8442  DX232 Sprains and strains                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 1403  DX11  Cancer of head and neck                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 9682  DX242 Poisoning by other medications and drugs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 36463 DX91  Other eye disorders                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 3595  DX95  Other nervous system disorders          </span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## Works the same for ICD-9 PR codes</span></span>
+<span class="r-in"><span class="fu">classify_ccs</span><span class="op">(</span><span class="st">"066"</span>, code_type <span class="op">=</span> <span class="st">"pr9"</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No value provided for `level`. Using `level = single` as the default</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #555555;">This message is displayed once every 8 hours.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "PR10"</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## Also works for ICD-10, but CCSR is prefered</span></span>
+<span class="r-in"><span class="fu">classify_ccs</span><span class="op">(</span><span class="st">"M61019"</span>,  <span class="st">"dx10"</span>, level<span class="op">=</span><span class="st">"single"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DX211"</span>
+<span class="r-in"><span class="fu">classify_ccs</span><span class="op">(</span><span class="st">"0TY10Z1"</span>, <span class="st">"pr10"</span>, <span class="st">"single"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "PR105"</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## Specify level to use multi-level CCS</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0223"</span>,<span class="st">"1100"</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu">classify_ccs</span><span class="op">(</span>code_type <span class="op">=</span> <span class="st">"dx9"</span>, level<span class="op">=</span><span class="st">"1"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DX-1" "DX-1"</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># If you want to see all levels use `level="all"`</span></span>
+<span class="r-in"><span class="co"># which returns a tibble</span></span>
+<span class="r-in"><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0223"</span>,<span class="st">"1100"</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span>
+<span class="r-in">  <span class="fu">classify_ccs</span><span class="op">(</span>code_type <span class="op">=</span> <span class="st">"dx9"</span>, level<span class="op">=</span><span class="st">"all"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">df</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   I9_DX CCS CCS_lvl1 CCS_lvl2 CCS_lvl3   CCS_lvl4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0223 DX2     DX-1   DX-1.1 DX-1.1.2 DX-1.1.2.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  1100 DX4     DX-1   DX-1.2 DX-1.2.2       &lt;NA&gt;</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="kw">if</span><span class="op">(</span><span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/is_installed.html" class="external-link">is_installed</a></span><span class="op">(</span><span class="st">"dplyr"</span>, version <span class="op">=</span> <span class="st">"1.0.0"</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span class="r-in">  <span class="va">df</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> <span class="co"># requires dplyr::across()</span></span>
+<span class="r-in">    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">CCS</span>, <span class="va">CCS_lvl1</span><span class="op">)</span>, <span class="va">explain_ccs</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span class="op">}</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   I9_DX                          CCS                          CCS_lvl1 CCS_lvl2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0223 Septicemia (except in labor) Infectious and parasitic diseases   DX-1.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  1100                      Mycoses Infectious and parasitic diseases   DX-1.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   CCS_lvl3   CCS_lvl4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 DX-1.1.2 DX-1.1.2.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 DX-1.2.2       &lt;NA&gt;</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

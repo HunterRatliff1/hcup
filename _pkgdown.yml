@@ -2,3 +2,14 @@ url: https://hunterratliff1.github.io/hcup/index.html
 template:
   bootstrap: 5
 
+reference:
+- contents:
+  - ccsr_dx
+- title: Classify
+  desc:  Classifies ICD codes into mutually exclusive categories.
+- contents:
+  - starts_with("classify_")
+- title: Explain
+  desc:  Converts HCUP categories into human-readable labels
+- contents:
+  - starts_with("explain_")
