@@ -59,7 +59,7 @@
 #'   mutate(CCI = classify_chronic(ICD_10, icd_version = 10))
 classify_chronic <- function(icd_dx, icd_version){
 
-  warn_decimals(icd_dx)
+  check_icd_format(icd_dx)
 
   icd_version <- as.character(icd_version) # in case provided as numeric
   icd_version <- rlang::arg_match(icd_version, c("9", "10"))

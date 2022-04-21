@@ -110,7 +110,7 @@
 #'   unnest_longer(CCSR)
 #'
 ccsr_dx <- function(icd_10_dx){
-  warn_decimals(icd_10_dx)
+  check_icd_format(icd_10_dx)
 
   if(!rlang::inherits_any(icd_10_dx, "character")) {
     bad_classes <- glue::glue_collapse(glue::backtick(class(icd_10_dx)), sep = ", ", last = " and ")
@@ -199,7 +199,7 @@ ccsr_dx <- function(icd_10_dx){
 #'   mutate(CCSR_ip = classify_ccsr_dx1(ICD10, setting="inpatient"),
 #'          CCSR_op = classify_ccsr_dx1(ICD10, setting="outpatient"))
 classify_ccsr_dx1 <- function(icd_10_dx1, setting = NULL) {
-  warn_decimals(icd_10_dx1) # Warn if decimal version is used
+  check_icd_format(icd_10_dx1)
 
   setting <- setting %||% heuristic_msg("setting", "inpatient")
   setting <- rlang::arg_match(setting, c("inpatient", "outpatient", "ip", "op"))

@@ -145,6 +145,7 @@
 #'     mutate(across(c(CCS, CCS_lvl1), explain_ccs))
 #' }
 classify_ccs <- function(icd_codes, code_type, level=NULL) {
+  check_icd_format(icd_codes)
 
   # Check to see that a valid `code_type` was given, then base on that
   # code type, check that a valid level was given. Finally, match codes

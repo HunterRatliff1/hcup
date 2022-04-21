@@ -32,7 +32,7 @@
 #'   mutate(CCSR = classify_ccsr_pr(icd_10),
 #'          explained = explain_ccsr(CCSR))
 classify_ccsr_pr <- function(icd_pr){
-  warn_decimals(icd_pr)
+  check_icd_format(icd_pr)
 
   CCSR_ref <- hcup.data::CCSR_PR_mapping
 

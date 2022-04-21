@@ -62,7 +62,7 @@
 #' @importFrom dplyr %>%
 classify_pr <- function(icd_pr){
 
-  warn_decimals(icd_pr)
+  check_icd_format(icd_pr)
 
   proc_class_df <- dplyr::bind_rows(
     dplyr::select(hcup.data::proc_class_icd9, ICD=.data$I9_PR, proc_class),
