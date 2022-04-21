@@ -15,7 +15,7 @@ classify_chronic(icd_dx, icd_version)
 \item{icd_dx}{A vector of ICD diagnosis codes (without decimals)}
 
 \item{icd_version}{The version of ICD codes to be used. Can be
-either ICD-10 (\code{icd_version = 10}) or ICD-9 (\code{icd_version = 9})}
+either ICD-10 (\code{icd_version = "dx10"}) or ICD-9 (\code{icd_version = "dx9"})}
 }
 \value{
 A vector of CCI classifications. The levels returned depend on
@@ -28,7 +28,7 @@ Condition Indicator (CCI) categories using the HCUP's software
 \details{
 Starting in v2021.1 (beta version), the CCI tool for ICD-10-CM was expanded
 to identify four types of conditions. Therefore, running the
-function with \code{icd_version = 10} will categorize ICD-10-CM codes into one of
+function with \code{icd_version = "dx10"} will categorize ICD-10-CM codes into one of
 the four conditions below:
 \itemize{
 \item \strong{Acute}: Examples include aortic embolism, bacterial infection, pregnancy,
@@ -48,12 +48,12 @@ using both ICD-9 and ICD-10.
 }
 \examples{
 ## Take an ICD dx code and return the CCI
-classify_chronic(icd_dx = "G4730", icd_version = 10)
-classify_chronic(icd_dx = "56081", icd_version = 9)
+classify_chronic(icd_dx = "G4730", icd_version = "dx10")
+classify_chronic(icd_dx = "56081", icd_version = "dx9")
 
 # Vectorized version
 icd_codes <- c("G4730", "L563", "M25151")
-classify_chronic(icd_codes, icd_version = 10)
+classify_chronic(icd_codes, icd_version = "dx10")
 
 # This works well in the dplyr workflow
 library(dplyr)
@@ -63,7 +63,7 @@ pt_data <- tibble(
 )
 
 pt_data \%>\%
-  mutate(CCI = classify_chronic(ICD_10, icd_version = 10))
+  mutate(CCI = classify_chronic(ICD_10, icd_version = "dx10"))
 }
 \seealso{
 \code{\link[hcup.data:CCI_icd9]{CCI_icd9}} and

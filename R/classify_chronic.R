@@ -5,7 +5,7 @@
 #'
 #' @param icd_dx A vector of ICD diagnosis codes (without decimals)
 #' @param icd_version The version of ICD codes to be used. Can be
-#'   either ICD-10 (`icd_version = 10`) or ICD-9 (`icd_version = 9`)
+#'   either ICD-10 (`icd_version = "dx10"`) or ICD-9 (`icd_version = "dx9"`)
 #'
 #' @return A vector of CCI classifications. The levels returned depend on
 #'   the version of ICD codes. See Details section
@@ -19,7 +19,7 @@
 #' @details
 #' Starting in v2021.1 (beta version), the CCI tool for ICD-10-CM was expanded
 #' to identify four types of conditions. Therefore, running the
-#' function with `icd_version = 10` will categorize ICD-10-CM codes into one of
+#' function with `icd_version = "dx10"` will categorize ICD-10-CM codes into one of
 #' the four conditions below:
 #' * __Acute__: Examples include aortic embolism, bacterial infection, pregnancy,
 #'  and an initial encounter for an injury
@@ -41,12 +41,12 @@
 #' HCUP page for \href{https://www.hcup-us.ahrq.gov/toolssoftware/chronic_icd10/chronic_icd10.jsp}{CCI with ICD-10}
 #' @examples
 #' ## Take an ICD dx code and return the CCI
-#' classify_chronic(icd_dx = "G4730", icd_version = 10)
-#' classify_chronic(icd_dx = "56081", icd_version = 9)
+#' classify_chronic(icd_dx = "G4730", icd_version = "dx10")
+#' classify_chronic(icd_dx = "56081", icd_version = "dx9")
 #'
 #' # Vectorized version
 #' icd_codes <- c("G4730", "L563", "M25151")
-#' classify_chronic(icd_codes, icd_version = 10)
+#' classify_chronic(icd_codes, icd_version = "dx10")
 #'
 #' # This works well in the dplyr workflow
 #' library(dplyr)
@@ -56,22 +56,22 @@
 #' )
 #'
 #' pt_data %>%
-#'   mutate(CCI = classify_chronic(ICD_10, icd_version = 10))
+#'   mutate(CCI = classify_chronic(ICD_10, icd_version = "dx10"))
 classify_chronic <- function(icd_dx, icd_version){
 
   check_icd_format(icd_dx)
 
   icd_version <- as.character(icd_version) # in case provided as numeric
-  icd_version <- rlang::arg_match(icd_version, c("9", "10"))
+  icd_version <- rlang::arg_match(icd_version, c("dx9", "dx10"))
 
-  if(icd_version=="9"){
+  if(icd_version=="dx9"){
     CCI_df  <- hcup.data::CCI_icd9
 
     CCI <- lookup_table(icd_codes = icd_dx,
                         ref_df   = CCI_df,
                         data_col = "I9_DX")
   }
-  if(icd_version=="10"){
+  if(icd_version=="dx10"){
     CCI_df <- hcup.data::CCI_icd10
 
     CCI <- lookup_table(icd_codes = icd_dx,

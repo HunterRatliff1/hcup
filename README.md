@@ -29,16 +29,13 @@ differ across ICD versions
 
 ``` r
 library(hcup)
-classify_chronic(icd_dx = "G4730", icd_version = 10)
-#> [1] "Chronic"
-classify_chronic(icd_dx = "56081", icd_version = 9)
-#> [1] "NonChronic"
+# classify_chronic(icd_dx = "G4730", icd_version = "dx10")
+# classify_chronic(icd_dx = "56081", icd_version = "dx9")
 
 
 # Vectorized version
 icd_codes <- c("G4730", "L563", "M25151")
-classify_chronic(icd_codes, icd_version = 10)
-#> [1] "Chronic" "Acute"   "Acute"
+# classify_chronic(icd_codes, icd_version = "dx10")
 ```
 
 ## Classify procedures by class
@@ -90,7 +87,7 @@ tibble(ICD = c("8442", "1403", "9682",  "36463", "3595")) %>%
 ## Works the same for ICD-9 PR codes
 classify_ccs("066", code_type = "pr9")
 #> No value provided for `level`. Using `level = single` as the default
-#> You can specify `level = single` to silence this alert
+#> This message is displayed once every 8 hours.
 #> [1] "PR10"
 ```
 
