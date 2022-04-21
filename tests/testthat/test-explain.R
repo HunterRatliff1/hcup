@@ -9,8 +9,11 @@ test_that("explain_ccsr handles NA & NULL", {
 
   bad_category <- c("URN001", "BAD CATEGORY", "CAR004")
 
-  expect_warning(explain_ccsr("Bad category"))
-  expect_null(explain_ccsr("Bad category"))
+  explain_ccsr("Bad category") %>%
+    expect_null() %>%
+    expect_warning() %>%
+    expect_warning() %>%
+    suppressMessages()
   expect_equal(explain_ccsr(bad_category)[2], as.character(NA))
 
 })

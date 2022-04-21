@@ -26,12 +26,33 @@ lookup_table <- function(icd_codes, ref_df, data_col){
   ## look up using left-join
   if(length(icd_codes)==1) {
     # not sure if this actually helps with speed...
-    ref_df[ref_df[[data_col]]==icd_codes,]
+    df <- ref_df[ref_df[[data_col]]==icd_codes,]
+
   } else({
     d <- data.frame(x = icd_codes)
     names(d)[1] <- data_col
-    dplyr::left_join(d, ref_df, by = data_col)
+    df <- dplyr::left_join(d, ref_df, by = data_col)
   })
+
+  # Use waldo to check that new df matches old
+  comp <- waldo::compare(icd_codes, df[[data_col]],
+                         x_arg = "ICD codes provided",
+                         y_arg = "Matches in lookup table")
+
+  # Abort if not matching
+  if(length(comp)>0){
+    msg <- glue::glue("The look up table didn't come back right ",
+                      "when they were cross-referenced to the ",
+                      "{rlang::expr_label(base::substitute(data_col))} ",
+                      "column of the ",
+                      "{rlang::expr_label(base::substitute(ref_df))}")
+    rlang::inform(comp)
+    rlang::warn(msg)
+  }
+
+
+
+  df
 }
 
 
