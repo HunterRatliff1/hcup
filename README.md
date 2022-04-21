@@ -29,13 +29,16 @@ differ across ICD versions
 
 ``` r
 library(hcup)
-# classify_chronic(icd_dx = "G4730", icd_version = "dx10")
-# classify_chronic(icd_dx = "56081", icd_version = "dx9")
+classify_chronic(icd_dx = "G4730", icd_version = "dx10")
+#> [1] "Chronic"
+classify_chronic(icd_dx = "56081", icd_version = "dx9")
+#> [1] "NonChronic"
 
 
 # Vectorized version
 icd_codes <- c("G4730", "L563", "M25151")
-# classify_chronic(icd_codes, icd_version = "dx10")
+classify_chronic(icd_codes, icd_version = "dx10")
+#> [1] "Chronic" "Acute"   "Acute"
 ```
 
 ## Classify procedures by class
